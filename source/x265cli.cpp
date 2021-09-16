@@ -447,7 +447,7 @@ namespace X265_NS {
             {
                 bufLength += sprintf(buf + bufLength, "(%d)", input->outputFrame());
             }
-            sprintf(buf + bufLength, "/%d frames, %.2f fps, %.2f kb/s, "
+            sprintf(buf + bufLength, "/%d frames, %.*f fps, %.2f kb/s, "
                 "elapsed: %d:%02d:%02d, eta: %d:%02d:%02d, "
                 "size: %.2f %1sB, est. size: %.2f %1sB",
                 (param->chunkEnd ? param->chunkEnd : param->totalFrames), fps, bitrate,
@@ -463,7 +463,7 @@ namespace X265_NS {
             {
                 bufLength += sprintf(buf + bufLength, "(%d)", input->outputFrame());
             }
-            sprintf(buf + bufLength, " frames: %.2f fps, %.2f kb/s", fps, bitrate);
+            sprintf(buf + bufLength, " frames: %.*f fps, %.2f kb/s", fps, bitrate);
         }
 
         fprintf(stderr, "%s     \r", buf + 5);;
