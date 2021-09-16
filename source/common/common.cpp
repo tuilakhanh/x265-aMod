@@ -35,6 +35,10 @@
 #include <sys/time.h>
 #endif
 
+#ifdef USE_MIMALLOC
+#include <mimalloc.h>
+#endif
+
 namespace X265_NS {
 
 #if CHECKED_BUILD || _DEBUG
@@ -56,7 +60,19 @@ int64_t x265_mdate(void)
 
 #define X265_ALIGNBYTES 64
 
-#if _WIN32
+#ifdef USE_MIMALLOC
+
+void *x265_malloc(size_t size)
+{
+    return mi_malloc_aligned(size, X265_ALIGNBYTES);
+}
+
+void x265_free(void *ptr)
+{
+    mi_free(ptr);
+}
+
+#elif _WIN32
 #if defined(__MINGW32__) && !defined(__MINGW64_VERSION_MAJOR)
 #define _aligned_malloc __mingw_aligned_malloc
 #define _aligned_free   __mingw_aligned_free
