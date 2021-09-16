@@ -435,6 +435,7 @@ namespace X265_NS {
 
         int64_t elapsed = time - startTime;
         double fps = elapsed > 0 ? frameNum * 1000000. / elapsed : 0;
+		int fps_prec = fps > 999.5 ? 0 : fps > 99.5 ? 1 : fps > 9.95 ? 2 : 3;
         float bitrate = 0.008f * totalbytes * (param->fpsNum / param->fpsDenom) / ((float)frameNum);
         int bufLength = 0;
         if (framesToBeEncoded)
@@ -450,7 +451,7 @@ namespace X265_NS {
             sprintf(buf + bufLength, "/%d frames, %.*f fps, %.2f kb/s, "
                 "elapsed: %d:%02d:%02d, eta: %d:%02d:%02d, "
                 "size: %.2f %1sB, est. size: %.2f %1sB",
-                (param->chunkEnd ? param->chunkEnd : param->totalFrames), fps, bitrate,
+                (param->chunkEnd ? param->chunkEnd : param->totalFrames), fps_prec, fps, bitrate,
                 ela / 3600, (ela / 60) % 60, ela % 60,
                 eta / 3600, (eta / 60) % 60, eta % 60,
                 totalbytes < 1048576 ? (double)totalbytes / 1024. : (double)totalbytes / 1048576., totalbytes < 1048576 ? "K" : "M",
@@ -463,7 +464,7 @@ namespace X265_NS {
             {
                 bufLength += sprintf(buf + bufLength, "(%d)", input->outputFrame());
             }
-            sprintf(buf + bufLength, " frames: %.*f fps, %.2f kb/s", fps, bitrate);
+            sprintf(buf + bufLength, " frames: %.*f fps, %.2f kb/s", fps_prec, fps, bitrate);
         }
 
         fprintf(stderr, "%s     \r", buf + 5);;
