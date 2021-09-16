@@ -1,0 +1,86 @@
+name: Build
+
+on: [push, workflow_dispatch]
+
+jobs:
+  build:
+    runs-on: windows-2019
+    defaults:
+      run:
+        shell: msys2 {0}
+    strategy:
+      matrix:
+        target_cpu:
+        - haswell
+        - skylake
+        - znver2
+        - znver3
+        toolchain:
+        - clang
+        - ucrt
+    steps:
+    - name: Parse matrix
+      run: |
+        if ("${{matrix.toolchain}}" -eq "clang") {
+          echo "MSYSTEM=CLANG64" >> $env:GITHUB_ENV
+          echo "DLL_DEPS=/clang64/bin/libc++.dll /clang64/bin/libunwind.dll" >> $env:GITHUB_ENV
+        } else {
+          echo "MSYSTEM=UCRT64" >> $env:GITHUB_ENV
+          echo "DLL_DEPS=/ucrt64/bin/libstdc++-6.dll /ucrt64/bin/libgcc_s_seh-1.dll /ucrt64/bin/libwinpthread-1.dll" >> $env:GITHUB_ENV
+        }
+      shell: pwsh
+    - name: Checkout x265
+      uses: actions/checkout@v2
+      with:
+        path: x265
+        fetch-depth: 0
+    - name: Checkout mimalloc
+      uses: actions/checkout@v2
+      with:
+        path: mimalloc
+        repository: microsoft/mimalloc
+        ref: v2.0.2
+    - name: Setup MSYS2
+      uses: msys2/setup-msys2@v2
+      with:
+        msystem: ${{env.MSYSTEM}}
+        update: true
+        install: >-
+          base-devel
+          mingw-w64-${{matrix.toolchain}}-x86_64-nasm
+          mingw-w64-${{matrix.toolchain}}-x86_64-toolchain
+          mingw-w64-${{matrix.toolchain}}-x86_64-cmake
+          mingw-w64-${{matrix.toolchain}}-x86_64-ninja
+    - name: Compile mimalloc
+      run: |
+        mkdir build
+        cd build
+        cmake -GNinja .. -DCMAKE_INSTALL_PREFIX=/usr/local
+        ninja
+        ninja install
+      working-directory: mimalloc
+    - name: Setup build dir
+      run: mkdir -p build/8b build/10b
+    - name: Compile x265 8bit
+      run: |
+        cmake -GNinja ../../x265/source -DEXPORT_C_API=OFF -DENABLE_SHARED=OFF -DENABLE_CLI=OFF -DTARGET_CPU=${{matrix.target_cpu}} -DUSE_MIMALLOC=ON -DUSE_LTO=ON -DCMAKE_ASM_NASM_FLAGS=-w-macro-params-legacy
+        ninja
+        cp libx265.a ../10b/libx265_8b.a
+      working-directory: build/8b
+    - name: Compile x265 10bit
+      run: |
+        export PKG_CONFIG_PATH=/usr/local/lib/pkgconfig
+        cmake -GNinja ../../x265/source -DEXTRA_LIB=x265_8b.a -DEXTRA_LINK_FLAGS=-L. -DENABLE_AVISYNTH=OFF -DENABLE_VPYSYNTH=OFF -DLINKED_8BIT=ON -DHIGH_BIT_DEPTH=ON -DENABLE_HDR10_PLUS=ON -DENABLE_SHARED=OFF -DENABLE_CLI=ON -DENABLE_PIC=ON -DSTATIC_LINK_CRT=ON  -DTARGET_CPU=${{matrix.target_cpu}} -DUSE_MIMALLOC=ON -DUSE_LTO=ON -DCMAKE_EXE_LINKER_FLAGS=-LD:/a/_temp/msys/msys64/usr/local/lib -DCMAKE_ASM_NASM_FLAGS=-w-macro-params-legacy
+        ninja
+        strip -s x265.exe
+      working-directory: build/10b
+    - name: Package
+      run: |
+        mkdir dist
+        cp ${{env.DLL_DEPS}} dist
+        cp build/10b/x265.exe dist
+    - name: Upload
+      uses: actions/upload-artifact@v2
+      with:
+        name: x265-win64-${{matrix.target_cpu}}-${{matrix.toolchain}}
+        path: dist/*
