@@ -71,16 +71,10 @@ jobs:
       working-directory: mimalloc/build
     - name: Setup build dir
       run: mkdir -p build/8b build/10b
-    - name: Compile x265 8bit
-      run: |
-        cmake -GNinja ../../x265/source -DEXPORT_C_API=OFF -DENABLE_SHARED=OFF -DENABLE_CLI=OFF -DTARGET_CPU=${{matrix.target_cpu}} -DUSE_MIMALLOC=ON -DUSE_LTO=ON -DCMAKE_ASM_NASM_FLAGS=-w-macro-params-legacy
-        ninja
-        cp libx265.a ../10b/libx265_8b.a
-      working-directory: build/8b
     - name: Compile x265 10bit
       run: |
         export PKG_CONFIG_PATH=/usr/local/lib/pkgconfig
-        cmake -GNinja ../../x265/source -DEXTRA_LIB=x265_8b.a -DEXTRA_LINK_FLAGS=-L. -DENABLE_AVISYNTH=OFF -DENABLE_VPYSYNTH=OFF -DLINKED_8BIT=ON -DHIGH_BIT_DEPTH=ON -DENABLE_HDR10_PLUS=ON -DENABLE_SHARED=OFF -DENABLE_CLI=ON -DENABLE_PIC=ON -DSTATIC_LINK_CRT=ON  -DTARGET_CPU=${{matrix.target_cpu}} -DUSE_MIMALLOC=ON -DUSE_LTO=ON -DCMAKE_EXE_LINKER_FLAGS=-LD:/a/_temp/msys/msys64/usr/local/lib -DCMAKE_ASM_NASM_FLAGS=-w-macro-params-legacy
+        cmake -GNinja ../../x265/source -DENABLE_AVISYNTH=OFF -DENABLE_VPYSYNTH=OFF -DHIGH_BIT_DEPTH=ON -DENABLE_HDR10_PLUS=ON -DENABLE_SHARED=OFF -DENABLE_CLI=ON -DENABLE_PIC=ON -DSTATIC_LINK_CRT=ON  -DTARGET_CPU=${{matrix.target_cpu}} -DUSE_MIMALLOC=ON -DUSE_LTO=ON -DCMAKE_EXE_LINKER_FLAGS=-LD:/a/_temp/msys/msys64/usr/local/lib -DCMAKE_ASM_NASM_FLAGS=-w-macro-params-legacy
         ninja
         strip -s x265.exe
       working-directory: build/10b
