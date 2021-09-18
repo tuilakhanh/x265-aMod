@@ -13,6 +13,8 @@ jobs:
         target_cpu:
         - haswell
         - skylake
+        - sandybridge
+        - nehalem
         - znver2
         - znver3
     steps:
