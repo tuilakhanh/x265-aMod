@@ -23,19 +23,12 @@ jobs:
       with:
         path: x265
         fetch-depth: 0
-    - name: Cache mimalloc
-      id: cache-mi
-      uses: actions/cache@v2
-      with:
-        path: mimalloc
-        key: ${{matrix.target_cpu}}-${{matrix.toolchain}}-mi
     - name: Checkout mimalloc
       uses: actions/checkout@v2
       with:
         path: mimalloc
         repository: microsoft/mimalloc
         ref: v2.0.2
-      if: steps.cache-mi.outputs.cache-hit != 'true'
     - name: Setup MSYS2
       uses: msys2/setup-msys2@v2
       with:
@@ -54,11 +47,8 @@ jobs:
         cd build
         cmake -GNinja .. -DCMAKE_INSTALL_PREFIX=/usr/local -DCMAKE_POLICY_DEFAULT_CMP0069=NEW -DCMAKE_INTERPROCEDURAL_OPTIMIZATION=ON
         ninja
+        ninja install
       working-directory: mimalloc
-      if: steps.cache-mi.outputs.cache-hit != 'true'
-    - name: Install mimalloc
-      run: ninja install
-      working-directory: mimalloc/build
     - name: Setup build dir
       run: mkdir -p build/10b
     - name: Download profdata
