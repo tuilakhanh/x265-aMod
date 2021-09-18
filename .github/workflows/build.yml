@@ -15,20 +15,7 @@ jobs:
         - skylake
         - znver2
         - znver3
-        toolchain:
-        - clang
-        - ucrt
     steps:
-    - name: Parse matrix
-      run: |
-        if ("${{matrix.toolchain}}" -eq "clang") {
-          echo "MSYSTEM=CLANG64" >> $env:GITHUB_ENV
-          echo "DLL_DEPS=/clang64/bin/libc++.dll /clang64/bin/libunwind.dll" >> $env:GITHUB_ENV
-        } else {
-          echo "MSYSTEM=UCRT64" >> $env:GITHUB_ENV
-          echo "DLL_DEPS=/ucrt64/bin/libstdc++-6.dll /ucrt64/bin/libgcc_s_seh-1.dll /ucrt64/bin/libwinpthread-1.dll" >> $env:GITHUB_ENV
-        }
-      shell: pwsh
     - name: Checkout x265
       uses: actions/checkout@v2
       with:
@@ -50,14 +37,14 @@ jobs:
     - name: Setup MSYS2
       uses: msys2/setup-msys2@v2
       with:
-        msystem: ${{env.MSYSTEM}}
+        msystem: CLANG64
         update: true
         install: >-
           base-devel
-          mingw-w64-${{matrix.toolchain}}-x86_64-nasm
-          mingw-w64-${{matrix.toolchain}}-x86_64-toolchain
-          mingw-w64-${{matrix.toolchain}}-x86_64-cmake
-          mingw-w64-${{matrix.toolchain}}-x86_64-ninja
+          mingw-w64-clang-x86_64-nasm
+          mingw-w64-clang-x86_64-toolchain
+          mingw-w64-clang-x86_64-cmake
+          mingw-w64-clang-x86_64-ninja
     - name: Compile mimalloc
       run: |
         mkdir build
@@ -84,7 +71,7 @@ jobs:
     - name: Package
       run: |
         mkdir dist
-        cp ${{env.DLL_DEPS}} dist
+        cp /clang64/bin/libc++.dll /clang64/bin/libunwind.dll dist
         cp build/10b/x265.exe dist
     - name: Upload
       uses: actions/upload-artifact@v2
