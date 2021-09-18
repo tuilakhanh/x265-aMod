@@ -45,6 +45,7 @@ jobs:
           mingw-w64-clang-x86_64-toolchain
           mingw-w64-clang-x86_64-cmake
           mingw-w64-clang-x86_64-ninja
+          upx
     - name: Compile mimalloc
       run: |
         mkdir build
@@ -67,6 +68,7 @@ jobs:
         cmake -GNinja ../../x265/source -DENABLE_AVISYNTH=OFF -DENABLE_VPYSYNTH=OFF -DHIGH_BIT_DEPTH=ON -DENABLE_HDR10_PLUS=ON -DENABLE_SHARED=OFF -DENABLE_CLI=ON -DENABLE_PIC=ON -DSTATIC_LINK_CRT=ON  -DTARGET_CPU=${{matrix.target_cpu}} -DUSE_MIMALLOC=ON -DUSE_LTO=ON -DCMAKE_EXE_LINKER_FLAGS=-LD:/a/_temp/msys/msys64/usr/local/lib -DCMAKE_ASM_NASM_FLAGS=-w-macro-params-legacy -DCMAKE_CXX_FLAGS="-fprofile-instr-use=${{github.workspace}}/x265.profdata"
         ninja
         strip -s x265.exe
+        upx -9 x265.exe
       working-directory: build/10b
     - name: Package
       run: |
