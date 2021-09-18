@@ -70,11 +70,14 @@ jobs:
       run: ninja install
       working-directory: mimalloc/build
     - name: Setup build dir
-      run: mkdir -p build/8b build/10b
+      run: mkdir -p build/10b
+    - name: Download profdata
+      run: iwr https://github.com/AmusementClub/blobs/raw/profdata/x265.profdata -OutFile x265.profdata
+      shell: pwsh
     - name: Compile x265 10bit
       run: |
         export PKG_CONFIG_PATH=/usr/local/lib/pkgconfig
-        cmake -GNinja ../../x265/source -DENABLE_AVISYNTH=OFF -DENABLE_VPYSYNTH=OFF -DHIGH_BIT_DEPTH=ON -DENABLE_HDR10_PLUS=ON -DENABLE_SHARED=OFF -DENABLE_CLI=ON -DENABLE_PIC=ON -DSTATIC_LINK_CRT=ON  -DTARGET_CPU=${{matrix.target_cpu}} -DUSE_MIMALLOC=ON -DUSE_LTO=ON -DCMAKE_EXE_LINKER_FLAGS=-LD:/a/_temp/msys/msys64/usr/local/lib -DCMAKE_ASM_NASM_FLAGS=-w-macro-params-legacy
+        cmake -GNinja ../../x265/source -DENABLE_AVISYNTH=OFF -DENABLE_VPYSYNTH=OFF -DHIGH_BIT_DEPTH=ON -DENABLE_HDR10_PLUS=ON -DENABLE_SHARED=OFF -DENABLE_CLI=ON -DENABLE_PIC=ON -DSTATIC_LINK_CRT=ON  -DTARGET_CPU=${{matrix.target_cpu}} -DUSE_MIMALLOC=ON -DUSE_LTO=ON -DCMAKE_EXE_LINKER_FLAGS=-LD:/a/_temp/msys/msys64/usr/local/lib -DCMAKE_ASM_NASM_FLAGS=-w-macro-params-legacy '-fprofile-instr-use=${{github.workspace}}/x265.profdata'
         ninja
         strip -s x265.exe
       working-directory: build/10b
