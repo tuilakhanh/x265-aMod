@@ -52,7 +52,7 @@ jobs:
       run: |
         mkdir build
         cd build
-        cmake -GNinja .. -DCMAKE_INSTALL_PREFIX=/usr/local
+        cmake -GNinja .. -DCMAKE_INSTALL_PREFIX=/usr/local -DCMAKE_POLICY_DEFAULT_CMP0069=NEW -DCMAKE_INTERPROCEDURAL_OPTIMIZATION=ON
         ninja
       working-directory: mimalloc
       if: steps.cache-mi.outputs.cache-hit != 'true'
