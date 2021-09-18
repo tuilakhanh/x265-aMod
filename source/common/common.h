@@ -223,22 +223,11 @@ typedef int16_t  coeff_t;      // transform coefficient
 #define CHECKED_MALLOC(var, type, count) \
     { \
         var = (type*)x265_malloc(sizeof(type) * (count)); \
-        if (!var) \
-        { \
-            x265_log(NULL, X265_LOG_ERROR, "malloc of size %d failed\n", sizeof(type) * (count)); \
-            goto fail; \
-        } \
     }
 #define CHECKED_MALLOC_ZERO(var, type, count) \
     { \
         var = (type*)x265_malloc(sizeof(type) * (count)); \
-        if (var) \
-            memset((void*)var, 0, sizeof(type) * (count)); \
-        else \
-        { \
-            x265_log(NULL, X265_LOG_ERROR, "malloc of size %d failed\n", sizeof(type) * (count)); \
-            goto fail; \
-        } \
+        memset((void*)var, 0, sizeof(type) * (count)); \
     }
 
 #if defined(_MSC_VER)
@@ -336,7 +325,7 @@ typedef int16_t  coeff_t;      // transform coefficient
 #define INTEGRAL_PLANE_NUM          12 // 12 integral planes for 32x32, 32x24, 32x8, 24x32, 16x16, 16x12, 16x4, 12x16, 8x32, 8x8, 4x16 and 4x4.
 
 #define NAL_TYPE_OVERHEAD 2
-#define START_CODE_OVERHEAD 3 
+#define START_CODE_OVERHEAD 3
 #define FILLER_OVERHEAD (NAL_TYPE_OVERHEAD + START_CODE_OVERHEAD + 1)
 
 #define MAX_NUM_DYN_REFINE          (NUM_CU_DEPTH * X265_REFINE_INTER_LEVELS)
